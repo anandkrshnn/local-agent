@@ -235,6 +235,18 @@ This is a **working prototype** (v0.1.0), not production software for critical u
 
 ---
 
+## 🌐 Part of the Sovereign AI Ecosystem
+
+Local Agent demonstrates the **Permission Broker pattern** at personal scale.
+
+The same security principles scale to enterprise systems through:
+- **[PTV Protocol™](https://github.com/anandkrshnn/ptv-protocol-spec)** — Open specification for cryptographically-verifiable AI agent identity
+- **Sovereign AI Stack** (private) — Production implementation for healthcare, finance, government
+
+**Learn more:** [Request evaluation access](https://github.com/anandkrshnn/ptv-protocol-spec/blob/main/docs/EVALUATION_LICENSE_REQUEST.md)
+
+---
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) for details.
