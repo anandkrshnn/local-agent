@@ -85,7 +85,7 @@ Before installing, ensure you have:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/local-agent.git
+git clone https://github.com/anandkrshnn/local-agent.git
 cd local-agent
 
 # 2. Install dependencies

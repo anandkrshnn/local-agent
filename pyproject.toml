@@ -1,6 +1,6 @@
 [project]
 name = "localagent"
-version = "0.4.0"
+version = "0.1.0"
 description = "A lightweight local-first AI agent with Just-in-Time Permission Broker for safe SLM tool execution"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -11,9 +11,16 @@ dependencies = [
     "duckdb",
     "sentence-transformers",
     "fastapi",
-    "uvicorn",
+    "uvicorn[standard]",
+    "pydantic",
+    "python-dotenv",
+    "python-jose[cryptography]",
+    "psutil",
     "jinja2",
 ]
+
+[project.scripts]
+local-agent = "localagent.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest", "black", "isort"]
