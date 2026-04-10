@@ -93,8 +93,11 @@ class LocalPermissionBroker:
             policy = self.policies.get(intent)
             if policy and policy.get("requires_confirmation") is True:
                 policy["requires_confirmation"] = False
-                print(f"🔄 Auto-policy update: Confirmation disabled for '{intent}' on '{resource}' "
-                      f"(learned from {count} successful uses in last 24h)")
+                msg = f"Auto-policy update: Confirmation disabled for '{intent}' on '{resource}' (learned from {count} successful uses in last 24h)"
+                try:
+                    print(f"🔄 {msg}")
+                except UnicodeEncodeError:
+                    print(f"[TRUST] {msg}")
 
     def confirm_permission(self, request_id: str, approved: bool) -> Dict[str, Any]:
         """Manually approve/deny a pending request."""

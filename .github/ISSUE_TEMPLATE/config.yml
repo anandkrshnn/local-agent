@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 General Questions & Discussions
+    url: https://github.com/anandkrshnn/local-agent/discussions
+    about: Ask questions and share ideas with the community.
+  - name: 🛡️ Security Vulnerability
+    url: https://github.com/anandkrshnn/local-agent/security
+    about: Report a security vulnerability privately.
