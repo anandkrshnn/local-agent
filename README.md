@@ -16,18 +16,24 @@
 
 ---
 
-## ⚡ The Problem
+## ⚡ The Problem: Local Agents Are Broken
 
-Local AI agents need tools to be useful. They should read files, manage data, search information, and automate tasks.
+Try giving a local AI agent tools (file operations, search, automation).
 
-But giving a language model direct system access is **dangerous**.
+You'll quickly discover the dilemma:
 
-Most existing solutions either:
-- 🔒 **Lock down too much** → agents can only chat, can't actually do anything
-- ⚠️ **Give too much access** → agents can run arbitrary commands, delete files, exfiltrate data
-- 😤 **Require constant confirmation** → approve every single action → unusable
+| Approach | What Happens | Result |
+|----------|--------------|--------|
+| **No Tools** | Agent can only chat | 😴 Useless |
+| **Unrestricted Access** | Agent can run any command | 💀 Dangerous |
+| **Constant Confirmation** | Approve every tiny action | 😤 Unusable |
 
-**There has to be a better way.**
+**Real examples of what goes wrong:**
+- AutoGPT deletes important files when hallucinating
+- LangChain agents expose API keys in logs
+- Open Interpreter runs malicious code from websites
+
+**There has to be a better way.** ✅ There is.
 
 ---
 
