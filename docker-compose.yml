@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  local-agent:
+    build: .
+    container_name: local-agent-v4
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent data
+      - ./data:/app/data
+      # Plugins directory
+      - ./plugins:/app/plugins
+      # Sandbox directory
+      - ./sandbox:/app/sandbox
+    environment:
+      - OLLAMA_ENDPOINT=http://ollama:11434
+      - DATA_DIR=/app/data
+      - PLUGINS_DIR=/app/plugins
+      - SANDBOX_PATH=/app/sandbox
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    networks:
+      - local-agent-network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: local-agent-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama-models:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - local-agent-network
+    command: serve
+
+  # Optional: Multiple Ollama instances for load balancing
+  ollama-2:
+    image: ollama/ollama:latest
+    container_name: local-agent-ollama-2
+    ports:
+      - "11435:11434"
+    volumes:
+      - ./ollama-models-2:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - local-agent-network
+    command: serve
+    profiles:
+      - multi-instance
+
+networks:
+  local-agent-network:
+    driver: bridge

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setting Up Local Agent</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #2a2a3e;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .progress-bar {
+            width: 300px;
+            height: 6px;
+            background: #2a2a3e;
+            border-radius: 3px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        .status {
+            font-size: 14px;
+            color: #888;
+            margin-top: 10px;
+        }
+        h3 {
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>🤖 Setting Up Local Agent</h3>
+        <div class="spinner"></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="status" id="status">Initializing...</div>
+    </div>
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        ipcRenderer.on('progress-update', (event, progress) => {
+            const fill = document.getElementById('progressFill');
+            const status = document.getElementById('status');
+            
+            fill.style.width = `${progress}%`;
+            
+            if (progress < 10) {
+                status.textContent = '📦 Installing Ollama...';
+            } else if (progress < 50) {
+                status.textContent = '📥 Downloading model...';
+            } else if (progress < 90) {
+                status.textContent = '🧠 Loading AI model...';
+            } else {
+                status.textContent = '✅ Almost ready!';
+            }
+        });
+    </script>
+</body>
+</html>

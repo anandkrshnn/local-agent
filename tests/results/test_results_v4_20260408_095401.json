@@ -1,0 +1,208 @@
+{
+  "timestamp": "2026-04-08T09:54:01.054730",
+  "version": "4.0.0",
+  "summary": {
+    "total": 19,
+    "passed": 15,
+    "failed": 4,
+    "pass_rate": 78.94736842105263
+  },
+  "results": [
+    {
+      "name": "Agent Initialization",
+      "passed": true,
+      "message": "Agent created successfully",
+      "duration_ms": 2129.2972564697266,
+      "details": null
+    },
+    {
+      "name": "Permission Broker",
+      "passed": true,
+      "message": "Response: Granted",
+      "duration_ms": 15.461921691894531,
+      "details": {
+        "granted": true,
+        "token": "1970be09fa88c3c4bbb3f114e29f1438",
+        "expires_at": 1775621759.062017,
+        "expires_in": 10,
+        "scope": {
+          "intent": "read_file",
+          "resource": "test.txt",
+          "issued_at": 1775621749.062017
+        }
+      }
+    },
+    {
+      "name": "Vector Memory",
+      "passed": true,
+      "message": "Total events: 8",
+      "duration_ms": 878.0431747436523,
+      "details": {
+        "total_events": 8,
+        "event_types": [
+          {
+            "type": "user_input",
+            "count": 5
+          },
+          {
+            "type": "test_event",
+            "count": 1
+          },
+          {
+            "type": "web_search",
+            "count": 1
+          },
+          {
+            "type": "test",
+            "count": 1
+          }
+        ],
+        "embedding_dim": 384
+      }
+    },
+    {
+      "name": "Sandbox Security",
+      "passed": false,
+      "message": "Sandbox escape should have been blocked",
+      "duration_ms": 0.0,
+      "details": null
+    },
+    {
+      "name": "Router Initialization",
+      "passed": true,
+      "message": "Router created successfully",
+      "duration_ms": 2037.2858047485352,
+      "details": null
+    },
+    {
+      "name": "Model Availability",
+      "passed": true,
+      "message": "Available: OllamaProvider",
+      "duration_ms": 2046.574354171753,
+      "details": {
+        "providers": [
+          {
+            "name": "OllamaProvider",
+            "available": true,
+            "models": [
+              "phi3:mini"
+            ],
+            "tier": "small",
+            "estimated_latency_ms": 500
+          }
+        ]
+      }
+    },
+    {
+      "name": "Intent Routing",
+      "passed": true,
+      "message": "Tested 4 prompts",
+      "duration_ms": 201814.43786621094,
+      "details": null
+    },
+    {
+      "name": "Tool Registry",
+      "passed": true,
+      "message": "Registered 6 tools: read_file, write_file, web_search, http_request, send_email...",
+      "duration_ms": 0.5078315734863281,
+      "details": {
+        "tools": [
+          "read_file",
+          "write_file",
+          "web_search",
+          "http_request",
+          "send_email",
+          "run_command"
+        ]
+      }
+    },
+    {
+      "name": "Tool Permissions",
+      "passed": true,
+      "message": "Write tool correctly requires confirmation",
+      "duration_ms": 1.0085105895996094,
+      "details": null
+    },
+    {
+      "name": "Session Manager",
+      "passed": true,
+      "message": "Created 2 isolated sessions",
+      "duration_ms": 4066.012144088745,
+      "details": {
+        "session1": "4bfe5bb2",
+        "session2": "9fcff3f9"
+      }
+    },
+    {
+      "name": "Session Isolation",
+      "passed": true,
+      "message": "Sessions maintain isolated state",
+      "duration_ms": 4060.0202083587646,
+      "details": null
+    },
+    {
+      "name": "Cache System",
+      "passed": true,
+      "message": "Cache store/retrieve working",
+      "duration_ms": 11.857748031616211,
+      "details": null
+    },
+    {
+      "name": "GPU Detection",
+      "passed": true,
+      "message": "Device: CPU | CUDA: False | MPS: False",
+      "duration_ms": 6.8359375,
+      "details": {
+        "available": false,
+        "backend": "None",
+        "device_count": 0,
+        "device_name": "CPU (PyTorch not installed)",
+        "has_cuda": false,
+        "has_mps": false,
+        "device": "CPU"
+      }
+    },
+    {
+      "name": "Web API Status",
+      "passed": false,
+      "message": "Server not running (start with: python -m local_agent.web.app)",
+      "duration_ms": 4026.1223316192627,
+      "details": null
+    },
+    {
+      "name": "Chat Flow",
+      "passed": true,
+      "message": "Response: Greetings! I'm Phi, an AI developed by Microsoft. ...",
+      "duration_ms": 7260.964870452881,
+      "details": null
+    },
+    {
+      "name": "File Operations",
+      "passed": true,
+      "message": "Read test file: Success",
+      "duration_ms": 1815.0928020477295,
+      "details": null
+    },
+    {
+      "name": "Memory Search",
+      "passed": true,
+      "message": "Search returned: Error: Tool 'search_memory' not found....",
+      "duration_ms": 1686.9313716888428,
+      "details": null
+    },
+    {
+      "name": "Concurrent Requests",
+      "passed": false,
+      "message": "Completed 2/5 requests",
+      "duration_ms": 43212.594509124756,
+      "details": null
+    },
+    {
+      "name": "Long Conversation",
+      "passed": false,
+      "message": "HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=120)",
+      "duration_ms": 218632.84063339233,
+      "details": null
+    }
+  ]
+}

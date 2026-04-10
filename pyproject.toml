@@ -1,0 +1,27 @@
+[project]
+name = "localagent"
+version = "0.4.0"
+description = "A lightweight local-first AI agent with Just-in-Time Permission Broker for safe SLM tool execution"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+dependencies = [
+    "requests",
+    "duckdb",
+    "sentence-transformers",
+    "fastapi",
+    "uvicorn",
+    "jinja2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "isort"]
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["localagent*"]

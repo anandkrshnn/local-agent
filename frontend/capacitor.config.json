@@ -1,0 +1,5 @@
+{
+  "appId": "com.localagent.app",
+  "appName": "Local Agent",
+  "webDir": "dist"
+}

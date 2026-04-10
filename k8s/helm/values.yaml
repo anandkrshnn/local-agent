@@ -1,0 +1,49 @@
+# k8s/helm/values.yaml
+app:
+  name: local-agent-v4
+
+replicaCount: 3
+
+image:
+  repository: local-agent
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+
+autoscaling:
+  minReplicas: 3
+  maxReplicas: 10
+
+postgresql:
+  enabled: true
+  auth:
+    database: local_agent
+    username: agent_user
+    password: changeme
+
+redis:
+  enabled: true
+  architecture: standalone
+
+ollama:
+  enabled: true
+  replicas: 3
+  resources:
+    requests:
+      memory: "8Gi"
+      cpu: "4000m"
+    limits:
+      memory: "16Gi"
+      cpu: "8000m"
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: agent.local.com
+      paths:
+        - path: /
+          pathType: Prefix
