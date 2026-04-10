@@ -35,6 +35,14 @@ audit_log.jsonl
 sandbox/
 config.yaml
 
+# Local databases
+*.db
+*.db-wal
+*.db-shm
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
 # IDE
 .vscode/
 .idea/

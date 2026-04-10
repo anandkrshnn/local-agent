@@ -2,15 +2,15 @@
 
 # 🛡️ Local Agent
 
-**Security-First AI That Stays On Your Machine**
+![Demo](docs/demo.webp)
+
+*Watch: Permission broker learns trusted patterns after 8 approvals*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Ollama](https://img.shields.io/badge/Ollama-Compatible-green.svg)](https://ollama.ai/)
 
 [Quick Start](#quick-start) • [Architecture](#architecture) • [Security](#security-guarantees) • [Documentation](docs/) • [Contributing](#contributing)
-
-![Dashboard Preview](docs/images/dashboard.png)
 
 </div>
 
@@ -43,24 +43,28 @@ Local Agent introduces the **Local Permission Broker (LPB)** — a security laye
 
 **Think of it as an "airlock" for AI tool execution:**
 
+![Architecture Diagram](docs/architecture.png)
+
+<details>
+<summary>📈 View Mermaid Source</summary>
+
 ```mermaid
 graph TD
-    A[User Request] --> B[AI Model]
-    B --> C{Permission Broker}
-    C -->|Low Risk| D[Auto-Allow]
-    C -->|Moderate Risk| E[Request Confirmation]
-    C -->|High Risk| F[Auto-Deny]
-    D --> G[Issue Token]
-    E -->|User Approves| G
-    F --> H[Log & Reject]
-    G --> I[Tool Executor]
-    I --> J[Secure Sandbox]
-    J --> K[Audit Trail]
-    
-    style C fill:#ffd700,stroke:#333,stroke-width:4px
-    style G fill:#90ee90,stroke:#333,stroke-width:2px
-    style H fill:#ff6b6b,stroke:#333,stroke-width:2px
+    A["AI Model"] -->|"1. Tool Call Request"| B["Local Permission Broker"]
+    B -->|"2. Evaluate Intent"| C{"Risk Score"}
+    C -->|"Low Risk"| D["Request User Approval"]
+    C -->|"Learned Pattern"| E["Auto-Approve"]
+    D -->|"User Clicks Approve"| F["Generate JWT Token"]
+    E --> F
+    F -->|"3. Single-Use Token (60s Expiry)"| G["Executor"]
+    G -->|"4. Validate Token"| H{"Token Valid?"}
+    H -->|"Yes"| I["Execute in Sandbox"]
+    H -->|"No"| J["Reject"]
+    I -->|"5. Log Result"| K["Audit Trail"]
+    K -->|"Merkle Tree"| L["Immutable Storage"]
 ```
+
+</details>
 
 ### 🔑 Key Features
 
@@ -76,51 +80,55 @@ graph TD
 
 ---
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-Before installing, ensure you have:
-
-- **Python 3.9+** ([Download](https://www.python.org/downloads/))
-- **Ollama** running locally ([Installation Guide](https://ollama.ai/))
-- **8GB+ RAM** (16GB recommended for larger models)
-- **DuckDB VSS Extension** (auto-installed with dependencies)
-
-### Installation
+## 🚀 Quick Start (60 Seconds)
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/anandkrshnn/local-agent.git
 cd local-agent
-
-# 2. Install dependencies
 pip install -e .
-
-# 3. Pull a compatible model (recommended: Phi-3)
 ollama pull phi3:mini
-
-# 4. Verify installation
-local-agent --version
-```
-
-### First Run
-
-```bash
-# Start the web dashboard
 local-agent serve
-
-# OR use the CLI
-local-agent chat
 ```
 
-🌐 Dashboard opens at `http://localhost:8000`
+Dashboard opens at **http://localhost:8000**
+
+---
+
+## ⚡ The Problem: Local AI Agents Are Broken
+
+Most local AI agents face an impossible choice:
+
+| Approach | What Happens | Result |
+|----------|--------------|--------|
+| **🔒 No Tools** | Agent can only chat | 😴 Useless |
+| **🔓 Unrestricted Access** | Agent can run any command | 💀 Dangerous |
+| **🛑 Constant Confirmation** | Approve every tiny action | 😤 Unusable |
+
+**Real-world consequences:** Hallucinating agents deleting files, exposing API keys in logs, or running malicious scripts from the web.
+
+---
+
+## ✨ The Solution: Local Permission Broker
+
+Local Agent introduces the **Local Permission Broker (LPB)** — a security "airlock" between your AI model and your system.
+
+**The Result:** Safe automation without confirmation fatigue.
+
+- ✅ **Intent-Based Risk Scoring**: Evaluates *what* the agent wants to do, not just which file it requests.
+- ✅ **Cryptographic Tokens**: Issues single-use, 60s expiry JWT tokens that cannot be replayed or forged.
+- ✅ **🧠 Auto-Learning**: After 8 approvals for a specific pattern, it's trusted and auto-approved.
+- ✅ **Immutable Audit Trail**: Permanent, tamper-evident record of every decision.
 
 ---
 
 ## 🏗️ Architecture
 
 ### Security Flow
+
+![Security Flow](docs/sequence_flow.png)
+
+<details>
+<summary>📈 View Mermaid Source</summary>
 
 ```mermaid
 sequenceDiagram
@@ -132,31 +140,33 @@ sequenceDiagram
     participant A as Audit Log
 
     U->>M: "Create a file called notes.txt"
-    M->>M: Generate tool call intent
-    M->>B: Request: append_to_file(sandbox/notes.txt)
+    M->>M: "Generate tool call intent"
+    M->>B: "Request: append_to_file(sandbox/notes.txt)"
     
-    B->>B: 1. Check resource in allowed paths ✓
-    B->>B: 2. Assess risk level: MODERATE
-    B->>B: 3. Check if learned pattern: NO
-    B->>B: Decision: REQUEST_CONFIRMATION
+    B->>B: "1. Check resource in allowed paths (OK)"
+    B->>B: "2. Assess risk level: MODERATE"
+    B->>B: "3. Check if learned pattern: NO"
+    B->>B: "Decision: REQUEST_CONFIRMATION"
     
-    B->>U: Permission request modal
-    U->>B: [Approve]
+    B->>U: "Permission request modal"
+    U->>B: "Approve"
     
-    B->>B: Generate JWT token (60s expiry)
-    B->>E: Token: eyJ0eXAi...
+    B->>B: "Generate JWT token (60s expiry)"
+    B->>E: "Token: eyJ0eXAi..."
     
-    E->>E: Validate signature ✓
-    E->>E: Check not expired ✓
-    E->>E: Mark token as CONSUMED
+    E->>E: "Validate signature (OK)"
+    E->>E: "Check not expired (OK)"
+    E->>E: "Mark token as CONSUMED"
     
-    E->>S: Execute append_to_file
-    S->>S: Write to sandbox/notes.txt
-    S->>A: Log action
+    E->>S: "Execute append_to_file"
+    S->>S: "Write to sandbox/notes.txt"
+    S->>A: "Log action"
     
-    E->>M: Success result
-    M->>U: ✓ Created notes.txt
+    E->>M: "Success result"
+    M->>U: "Created notes.txt"
 ```
+
+</details>
 
 ### 🧬 Semantic Memory (DuckDB + VSS)
 
