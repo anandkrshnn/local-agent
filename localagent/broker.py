@@ -114,6 +114,10 @@ class LocalPermissionBroker:
                 "expires_at": expires_at
             }
             self._audit(request_id, pending["intent"], pending["resource"], True, token, "Manually Approved", pending.get("context"))
+            
+            # Auto-policy learning: re-assess trust after manual approval
+            self._update_policy_from_audit(pending["intent"], pending["resource"])
+            
             del self.pending_confirmations[request_id]
             return {"granted": True, "token": token, "expires_at": expires_at}
         else:
