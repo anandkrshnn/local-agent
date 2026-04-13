@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  local-agent:
+    image: anandkrshnn/local-agent:v0.6.0
+    container_name: local-agent
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./vaults:/app/vaults
+    environment:
+      - OLLAMA_API_BASE=http://host.docker.internal:11434
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
