@@ -22,6 +22,9 @@ def main():
     # 'diagnose' command
     diagnose_parser = subparsers.add_parser("diagnose", help="Check if the environment is ready for Local Agent")
 
+    # 'review-rules' command
+    review_parser = subparsers.add_parser("review-rules", help="Interactively review and promote candidate policy rules")
+
     args = parser.parse_args()
 
     if args.command == "chat":
@@ -30,6 +33,8 @@ def main():
         run_serve(args.host, args.port)
     elif args.command == "diagnose":
         run_diagnose()
+    elif args.command == "review-rules":
+        run_review()
     else:
         parser.print_help()
 
@@ -103,6 +108,32 @@ def run_diagnose():
         safe_print("🟡", "[WARN]", f"Database not found (will be initialized on first run as {db_path})")
 
     safe_print("\n🚀", "\n[START]", "Ready to start!")
+
+def run_review():
+    agent = LocalAgent()
+    candidates = agent.broker.policy_engine.get_candidate_rules()
+
+    if not candidates:
+        print("No candidate rules to review at this time.")
+        return
+
+    print(f"\n=== Policy Review ({len(candidates)} candidates) ===")
+    for rule_id, rule in list(candidates.items()):
+        print(f"\nRule ID: {rule_id}")
+        print(f"Intent: {rule.get('intent')}")
+        print(f"Resource: {rule.get('resource_pattern')}")
+        print(f"Reason: {rule.get('reason')}")
+        print(f"Status: {rule.get('status')}")
+
+        choice = input("\n[P]romote | [R]eject | [S]kip -> ").strip().lower()
+        if choice == "p":
+            agent.broker.policy_engine.promote_rule(rule_id, user_approved=True)
+        elif choice == "r":
+            agent.broker.policy_engine.promote_rule(rule_id, user_approved=False)
+        else:
+            print("Skipped.")
+
+    print("\nReview session complete.")
 
 if __name__ == "__main__":
     main()

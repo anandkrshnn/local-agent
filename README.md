@@ -27,12 +27,28 @@ docker-compose up -d
 4. **Audit Trail** — Immutable SCITT receipts
 5. **Multi-Vault** — Healthcare/Finance silos
 
-## 🏢 Production Deploy
+## 🏢 Kubernetes Deployment
+
+A minimal `k8s/` manifest suite is included for deploying `local-agent` to a cluster:
 
 ```bash
-# K8s ready (manifests on request)
 kubectl apply -f k8s/
 ```
+
+The deployment:
+- Uses a `PersistentVolumeClaim` to keep encrypted vaults durable across pod restarts.
+- Exposes the agent via a `Service` on port 11434 (Ollama-style API).
+
+## 🖼️ Dashboard Previews
+
+![Command Hub](docs/screenshots/command_hub.png)
+*The Command Hub enables local-only agent control.*
+
+![Governed Brain](docs/screenshots/governed_brain.png)
+*The Governed Brain surface shows policy-bound memories and vaults.*
+
+![Compliance Hub](docs/screenshots/compliance_hub.png)
+*The Compliance Hub tracks policy-audits and vault histories.*
 
 ## 📱 Live Demo
 [Watch 30s Dashboard Flow](https://github.com/anandkrshnn/local-agent/releases/download/v0.6.0/demo.mp4)

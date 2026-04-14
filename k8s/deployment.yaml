@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-agent
+  labels:
+    app: local-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: local-agent
+  template:
+    metadata:
+      labels:
+        app: local-agent
+    spec:
+      containers:
+      - name: local-agent
+        image: anandkrshnn/local-agent:v0.6.0
+        ports:
+        - containerPort: 8000
+        - containerPort: 11434
+        env:
+        - name: OLLAMA_API_BASE
+          value: "http://ollama-service:11434"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+        volumeMounts:
+        - name: vaults-storage
+          mountPath: /app/vaults
+      volumes:
+      - name: vaults-storage
+        persistentVolumeClaim:
+          claimName: local-agent-vaults-pvc

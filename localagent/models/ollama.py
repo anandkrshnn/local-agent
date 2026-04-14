@@ -7,7 +7,7 @@ from typing import Tuple, Optional, Dict, List
 class OllamaClient:
     """Ollama client with proper system prompt support"""
 
-    def __init__(self, model: str = "phi3:mini"):
+    def __init__(self, model: str = "qwen2.5:3b"):
         self.model = model
         self.history: List[Dict] = []
 

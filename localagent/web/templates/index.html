@@ -4,270 +4,928 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocalAgent Dashboard</title>
+    <title>LocalAgent Vault Dashboard</title>
     <style>
         :root {
-            --bg-color: #0d1117;
+            --bg-color: #0b1117;
             --card-bg: rgba(22, 27, 34, 0.8);
             --accent-primary: #58a6ff;
-            --accent-secondary: #1f6feb;
+            --accent-secondary: #238636;
+            --accent-wait: #d29922;
             --text-main: #c9d1d9;
             --text-dim: #8b949e;
             --border-color: #30363d;
             --danger: #f85149;
             --success: #3fb950;
+            --glass-shine: rgba(255, 255, 255, 0.05);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 0;
             height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
+        }
+
+        /* Sidebar: Vault Manager */
+        .vault-sidebar {
+            width: 300px;
+            background: rgba(13, 17, 23, 0.95);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 50%, #161b22 0%, #0b0e14 100%);
         }
 
         .dashboard-container {
             display: flex;
-            width: 95vw;
-            height: 90vh;
+            flex-grow: 1;
+            padding: 20px;
             gap: 20px;
-            backdrop-filter: blur(10px);
-            max-width: 1400px;
+            overflow: hidden;
         }
 
-        /* Sidebar & Stats */
-        .sidebar {
-            width: 350px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-y: auto; /* Allow scrolling all monitor panels */
-            padding-right: 5px;
-        }
-
+        /* Panels */
         .panel {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 18px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
         }
 
-        h2 { font-size: 1.2rem; margin-top: 0; color: var(--accent-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        h3 { font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 0.9rem; margin-top: 0; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+        h3 { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; }
 
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
+        /* Vault Section */
         .stat-card {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 15px;
-            border-radius: 8px;
-            text-align: center;
         }
-
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: white; display: block; }
-        .stat-label { font-size: 0.7rem; color: var(--text-dim); }
-
-        /* Trust & Audit */
-        .trust-log, .audit-log {
-            flex-grow: 1;
-            overflow-y: auto;
-            font-size: 0.85em;
+        
+        .vault-item { 
+            padding: 10px; border-radius: 8px; border: 1px solid transparent; 
+            margin-bottom: 8px; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.2);
         }
+        .vault-item:hover { background: rgba(255,255,255,0.05); border-color: var(--accent-primary); }
+        .vault-item.active { background: rgba(88, 166, 255, 0.1); border-color: var(--accent-primary); }
+        .vault-name { font-size: 0.85rem; font-weight: 600; color: #fff; }
 
-        .log-entry { margin-bottom: 8px; padding: 8px; background: #1a1a2e; border-radius: 6px; }
+        button.action-btn { 
+            width: 100%; padding: 10px; background: var(--accent-primary); 
+            border: none; border-radius: 8px; color: #000; font-weight: bold; 
+            cursor: pointer; margin-top: 10px; transition: 0.2s;
+        }
+        button.action-btn:hover { background: #79c0ff; transform: translateY(-1px); }
+
+        /* Metrics */
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .metric-mini { text-align: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; }
+        .m-val { font-size: 1.1rem; font-weight: bold; display: block; }
+        .m-lbl { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; }
 
         /* Chat Hub */
-        .chat-hub {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
+        .chat-section { flex-grow: 2; flex-basis: 0; display: flex; flex-direction: column; }
+        #chat_history { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 90%; padding: 12px; border-radius: 10px; font-size: 0.95rem; line-height: 1.5; }
+        .message.you { align-self: flex-end; background: var(--accent-primary); color: #000; font-weight: 500; }
+        .message.agent { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); }
+
+        /* Logs & Traces */
+        .info-section { flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; gap: 20px; width: 350px; }
+        .log-area { flex-grow: 1; overflow-y: auto; font-size: 0.8rem; }
+        .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .log-entry.granted { border-left: 3px solid var(--success); }
+        .log-entry.denied { border-left: 3px solid var(--danger); }
+
+        /* Status Banner */
+        .status-banner { padding: 8px; text-align: center; font-size: 0.75rem; background: rgba(88, 166, 255, 0.1); border-bottom: 1px solid var(--accent-primary); color: var(--text-main); }
+        .status-banner.encrypted { background: rgba(63, 185, 80, 0.1); border-color: var(--success); color: var(--success); }
+
+        input#user_input { width: 100%; box-sizing: border-box; padding: 15px; background: #0d1117; border: 1px solid var(--border-color); color: #fff; border-radius: 0 0 12px 12px; outline: none; }
+        input#user_input:focus { border-color: var(--accent-primary); }
+
+        /* Airlock / Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
         }
+        .modal-card input { width: 100%; padding: 12px; border-radius: 8px; background: #0d1117; border: 1px solid var(--border-color); color: #fff; margin: 15px 0; }
 
-        #chat_history {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* Tabs */
+        .nav-tab { cursor: pointer; padding: 10px 20px; color: var(--text-dim); transition: 0.2s; border-radius: 8px 8px 0 0; }
+        .nav-tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-tab.active { color: var(--accent-primary); border-bottom: 2px solid var(--accent-primary); font-weight: bold; }
+
+        /* Memory Cards */
+        .memory-card { background: #161b22; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; position: relative; display: flex; flex-direction: column; gap: 10px; }
+        .memory-card.High { border-left: 4px solid var(--danger); }
+        .memory-card.Medium { border-left: 4px solid var(--warning); }
+        .memory-card.Low { border-left: 4px solid var(--success); }
+        .sensitivity-badge { font-size: 0.6rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; position: absolute; top: 10px; right: 10px; }
+        .badge-High { background: var(--danger); color: #fff; }
+        .badge-Medium { background: var(--warning); color: #000; }
+        .badge-Low { background: var(--success); color: #000; }
+        .card-actions { display: flex; gap: 8px; margin-top: auto; }
+        .btn-sm { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; border: none; cursor: pointer; opacity: 0.8; }
+        .btn-sm:hover { opacity: 1; }
+
+        /* Spinner & Toasts */
+        .spinner {
+            width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.1);
+            border-top: 2px solid var(--accent-primary); border-radius: 50%;
+            display: inline-block; animation: spin 1s linear infinite;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            position: relative;
-            line-height: 1.5;
+        .toast-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 10000;
+            display: flex; flex-direction: column; gap: 10px;
         }
-
-        .message.you {
-            align-self: flex-end;
-            background: var(--accent-secondary);
-            color: white;
-            border-bottom-right-radius: 4px;
+        .toast {
+            background: #21262d; border: 1px solid var(--border-color); color: #fff;
+            padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform: translateY(100px);
+            opacity: 0; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
         }
-
-        .message.agent {
-            align-self: flex-start;
-            background: rgba(255,255,255,0.1);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message strong { display: block; font-size: 0.7rem; opacity: 0.7; margin-bottom: 5px; }
-
-        .input-area {
-            display: flex;
-            padding: 20px;
-            gap: 10px;
-            background: rgba(0,0,0,0.2);
-            border-top: 1px solid var(--border-color);
-        }
-
-        input[type="text"] {
-            flex-grow: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            outline: none;
-        }
-
-        input[type="text"]:focus { border-color: var(--accent-primary); }
-
-        button {
-            background: var(--accent-primary);
-            color: var(--bg-color);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:hover { opacity: 0.9; }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.success { border-left: 4px solid var(--success); }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="panel">
-                <h2>Security Monitor</h2>
-                <div class="stat-grid">
-                    <div class="stat-card">
-                        <span class="stat-value" id="active_tokens">0</span>
-                        <span class="stat-label">Active Tokens</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value" id="memory_points">0</span>
-                        <span class="stat-label">Memory Points</span>
-                    </div>
-                </div>
-            </div>
 
-            <div class="panel" style="max-height: 200px;">
-                <h3>Learned Trust</h3>
-                <div id="trust_status" style="max-height: 150px; overflow-y: auto;">
-                    <small>Loading learned policies...</small>
-                </div>
+    <!-- Vault Sidebar -->
+    <div class="vault-sidebar">
+        <h2>Airlock Dashboard</h2>
+        
+        <div class="stat-card">
+            <div id="vault-status" style="margin-bottom: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); position: relative;">
+                <span id="vault-status-icon">🔓</span> 
+                <span id="vault-name">Default Vault</span>
             </div>
-
-            <div class="panel" style="flex-grow: 1; display: flex; flex-direction: column;">
-                <h3>Audit Log (Live)</h3>
-                <div class="audit-log" id="audit_log">
-                    Loading audit events...
-                </div>
+            
+            <div id="vault-list" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;">
+                <!-- Vault items will be loaded here -->
             </div>
+            
+            <button class="action-btn" onclick="createNewVault()">+ New Vault</button>
+            <button id="lock_vault_btn" class="action-btn" style="background:#ef4444; color:#fff; margin-top: 10px; display: none;" onclick="lockCurrentVault()">🔒 Lock Vault</button>
+        </div>
 
-            <div class="panel" style="max-height: 320px; display: flex; flex-direction: column;">
-                <h3>Sandbox Browser</h3>
-                <div id="sandbox_browser" style="flex-grow: 1; overflow-y: auto; background: #0f0f17; padding: 12px; border-radius: 8px; font-size: 0.9em;">
-                    Loading sandbox contents...
-                </div>
+        <div class="stat-card" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
+            <h3>🛡️ Trusted Folders</h3>
+            <div id="trust-list" style="overflow-y: auto; font-size: 0.75rem;">
+                <p style="opacity: 0.5; font-style: italic; padding: 10px;">No verified patterns yet.</p>
             </div>
         </div>
 
-        <!-- Chat Hub -->
-        <div class="chat-hub panel">
-            <h2>Chat Hub</h2>
-            <div id="chat_history">
-                <div class="message agent">
-                    <strong>LocalAgent</strong>
-                    LocalAgent online. v0.4.0 active.
+        <div class="stat-card">
+            <h3>📊 Metrics</h3>
+            <div class="metrics-grid">
+                <div class="metric-mini"><span class="m-val" id="stats_memory">0</span><span class="m-lbl">Memories</span></div>
+                <div class="metric-mini"><span class="m-val" id="ollama_status" style="color: var(--danger);">Offline</span><span class="m-lbl">LLM Engine</span></div>
+                <div class="metric-mini" style="grid-column: span 2; margin-top: 5px;">
+                    <span class="m-val" id="active_model" style="font-size: 0.7rem;">None</span><span class="m-lbl">Active Model</span>
                 </div>
             </div>
-            <div class="input-area">
-                <input type="text" id="user_input" placeholder="Enter secure instruction..." onkeypress="if(event.key === 'Enter') sendMessage()">
-                <button onclick="sendMessage()">Send</button>
+        </div>
+        
+        <div style="margin-top: auto; font-size: 0.65rem; color: var(--text-dim); text-align: center;">
+            v0.6.0-RELEASE | Production Polish Sprint
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-content">
+        <div id="encryption_status" class="status-banner">
+            🛡️ Starting in default mode...
+        </div>
+
+        <!-- Tab Header -->
+        <div style="display: flex; gap: 20px; padding: 10px 20px; border-bottom: 1px solid var(--border-color); background: #161b22;">
+            <div id="tab-chat" class="nav-tab active" onclick="switchTab('chat')">💬 Command Hub</div>
+            <div id="tab-brain" class="nav-tab" onclick="switchTab('brain')">🧠 Governed Brain</div>
+            <div id="tab-compliance" class="nav-tab" onclick="switchTab('compliance')">📜 Compliance Hub</div>
+        </div>
+
+        <div class="dashboard-container">
+            <!-- Chat Hub (Standard View) -->
+            <div id="view-chat" style="display: flex; flex-direction: row; flex-grow: 1; overflow: hidden; gap: 20px; width: 100%;">
+                <div class="chat-section panel">
+                    <h2>Recent Interactions <span id="vault_label" style="float: right; font-size: 0.6rem; opacity: 0.6;">(silo)</span></h2>
+                    <div id="chat_history">
+                        <div class="message agent">Welcome. Select a safe vault or create a new one to begin.</div>
+                    </div>
+                    <div style="margin-top: auto;">
+                        <input type="text" id="user_input" placeholder="Enter secure instruction..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="panel" style="flex-grow: 1;">
+                        <h2>Audit Trail</h2>
+                        <div class="log-area" id="audit_log"></div>
+                    </div>
+                    <div class="panel" style="height: 250px;">
+                        <h2>Latest Trace</h2>
+                        <div id="trace_content" style="font-size: 0.75rem; overflow-y: auto;">
+                            <p id="trace_summary">Idle.</p>
+                            <ul id="trace_memories" style="padding-left: 15px; color: var(--text-dim);"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brain View (Milestone 4) -->
+            <div id="view-brain" style="display: none; flex-direction: column; flex-grow: 1; padding: 20px; overflow-y: auto; width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h1>🧠 Governed Memory Browser</h1>
+                        <p style="opacity: 0.6; font-size: 0.9rem;">Review, promote, or redact distilled memories.</p>
+                    </div>
+                    <button onclick="optimizeMemory()" style="padding: 10px 20px; background: var(--accent-primary); color: #000; font-weight: bold; border-radius: 8px; border: none; cursor: pointer;">✨ Optimize Brain</button>
+                </div>
+
+                <div id="memory-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-bottom: 40px;">
+                    <!-- Memory cards will be loaded here -->
+                </div>
+
+                <div style="border-top: 2px solid var(--border-color); padding-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h1>🛡️ Policy Queue</h1>
+                            <p style="opacity: 0.6; font-size: 0.9rem;">Review and enforce learned access patterns.</p>
+                        </div>
+                    </div>
+                    <div id="policy-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                        <!-- Policy candidates will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Compliance Hub (Phase 2) -->
+            <div id="view-compliance" style="display: none; flex-direction: column; flex-grow: 1; overflow: hidden; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div>
+                        <h1>📜 Compliance Hub</h1>
+                        <p style="opacity: 0.6; font-size: 0.9rem;">Verified audit trail and autonomous action history.</p>
+                    </div>
+                    <button onclick="downloadComplianceReport()" style="padding: 12px 24px; background: var(--success); color: #000; font-weight: bold; border-radius: 8px; border: none; cursor: pointer;">💾 Download Audit JSON</button>
+                </div>
+
+                <div id="compliance-timeline" style="flex-grow: 1; overflow-y: auto; padding-right: 10px;">
+                    <!-- Audit history will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vault Action Modal (Unlock/Create) -->
+    <div id="vault_action_modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 id="action_title">Unlock Vault</h2>
+            <p id="action_subtitle" style="font-size: 0.8rem; color: var(--text-dim);"></p>
+            
+            <div id="vault_name_container">
+                <input type="text" id="action_vault_name" placeholder="Vault Name...">
+            </div>
+            
+            <input type="password" id="action_password" placeholder="Password...">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button onclick="closeVaultModal()" style="padding: 12px; background: #30363d; color: #fff; border: none; border-radius: 8px; cursor: pointer;">Cancel</button>
+                <button id="action_submit_btn" onclick="submitVaultAction()" style="padding: 12px; background: var(--success); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Airlock Permission Modal -->
+    <div id="airlock_modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="color: var(--danger);">🚨 Permission Required</h2>
+        <div class="modal-card" style="width: 500px;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">🛡️ AIRLOCK</h1>
+            <p style="opacity: 0.7; margin-bottom: 25px;">Just-in-Time Authorization Required</p>
+            
+            <div style="text-align: left; background: #0d1117; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                <div style="margin-bottom: 10px;"><span style="opacity: 0.6; font-size: 0.8rem;">INTENT:</span> <strong id="gate_intent" style="color: var(--accent-primary);"></strong></div>
+                <div style="margin-bottom: 10px;"><span style="opacity: 0.6; font-size: 0.8rem;">RESOURCE:</span> <code id="gate_resource" style="font-size: 0.85rem; background: #161b22; padding: 2px 6px; border-radius: 4px;"></code></div>
+                <div><span style="opacity: 0.6; font-size: 0.8rem;">RISK SCORE:</span> <strong id="gate_risk" style="color: var(--warning);"></strong></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="handleDecision(true)" style="padding: 15px; background: var(--success); color: #000; font-weight: bold; border-radius: 8px; border: none; cursor: pointer;">APPROVE ONCE</button>
+                <button onclick="handleDecision(false)" style="padding: 12px; background: rgba(255,255,255,0.05); color: #fff; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;">REJECT</button>
+                
+                <div style="height: 1px; background: var(--border-color); margin: 10px 0;"></div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="simulateAndPromote('allow')" style="flex: 1; padding: 12px; background: transparent; color: var(--success); border: 1px solid var(--success); border-radius: 8px; cursor: pointer; font-size: 0.8rem;">Always Allow Folder</button>
+                    <button onclick="simulateAndPromote('deny')" style="flex: 1; padding: 12px; background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 8px; cursor: pointer; font-size: 0.8rem;">Always BLOCK Folder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulation Modal (Milestone 5) -->
+    <div id="simulation_modal" class="modal-overlay">
+        <div class="modal-card" style="width: 550px; text-align: left;">
+            <h2 style="margin-bottom: 10px;">🔬 Policy Simulation</h2>
+            <p id="sim_description" style="opacity: 0.7; font-size: 0.9rem; margin-bottom: 20px;"></p>
+            
+            <div id="sim_results" style="background: #0d1117; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span style="opacity: 0.8;">Episodes Matched:</span>
+                    <strong id="sim_matches" style="font-size: 1.5rem; color: var(--accent-primary);">0</strong>
+                </div>
+                <div id="sim_message" style="font-size: 0.85rem; line-height: 1.4; color: #888;"></div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeSimulation()" style="padding: 10px 20px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">Cancel</button>
+                <button id="sim_confirm_btn" style="padding: 10px 20px; background: var(--accent-primary); color: #000; border: none; font-weight: bold; border-radius: 8px; cursor: pointer;">Activate Policy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History/Versioning Modal (Milestone 5) -->
+    <div id="history_modal" class="modal-overlay">
+        <div class="modal-card" style="width: 600px; text-align: left;">
+            <h2 style="margin-bottom: 5px;">📜 Policy History</h2>
+            <p id="history_subtitle" style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;"></p>
+            
+            <div id="history_list" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Versions loaded here -->
+            </div>
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="document.getElementById('history_modal').style.display='none'" style="padding: 10px 20px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">Close</button>
             </div>
         </div>
     </div>
 
     <script>
-        async function sendMessage() {
+        let currentRequestId = null;
+        let lastUserMessage = "";
+        let currentAction = null; // 'create' or 'unlock'
+        let targetVaultName = "";
+
+        async function updateDashboard() {
+            try {
+                const res = await fetch('/stats');
+                const data = await res.json();
+                
+                document.getElementById('stats_memory').innerText = data.memory_items?.total || 0;
+                const ollamaVal = document.getElementById('ollama_status');
+                if (ollamaVal) {
+                    ollamaVal.innerText = data.ollama_online ? "Online" : "Offline";
+                    ollamaVal.style.color = data.ollama_online ? "var(--success)" : "var(--danger)";
+                }
+                
+                // Update Vault Sidebar
+                loadVaults();
+                loadAudit();
+
+                // Check if we are in Brain view and refresh items
+                const brainView = document.getElementById('view-brain');
+                if (brainView && brainView.style.display === 'flex') {
+                    loadMemoryItems();
+                }
+            } catch(e) {}
+        }
+
+        // --- MILESTONE 4: GOVERNED MEMORY TABS & ACTIONS ---
+
+        async function loadPolicies() {
+            try {
+                const res = await fetch('/policies');
+                const data = await res.json();
+                const container = document.getElementById('policy-list');
+                
+                if (data.candidates.length === 0) {
+                    container.innerHTML = '<p style="opacity: 0.5; font-style: italic; grid-column: 1/-1;">No policy candidates waiting for review.</p>';
+                    return;
+                }
+
+                container.innerHTML = data.candidates.map(c => `
+                    <div class="memory-card candidate-card" style="border-left: 4px solid var(--accent-wait);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <span class="badge" style="background: var(--accent-wait); color: #000;">${c.effect.toUpperCase()} CANDIDATE</span>
+                            <span style="font-size: 0.7rem; opacity: 0.6;">${c.intent}</span>
+                        </div>
+                        <div style="font-size: 0.9rem; margin-bottom: 10px; font-family: 'Fira Code', monospace; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">${c.resource_pattern}</div>
+                        <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 15px;">${c.description || 'Auto-learned pattern'}</p>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="promoteRule('${c.rule_id}')" style="flex: 1; padding: 8px; background: var(--success); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Promote</button>
+                            <button onclick="rejectRule('${c.rule_id}')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function promoteRule(ruleId) {
+            showToast("Promoting policy...", "info");
+            await fetch('/policies/promote', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rule_id: ruleId})
+            });
+            loadPolicies();
+            updateDashboard();
+        }
+
+        async function rejectRule(ruleId) {
+            showToast("Rejecting policy...", "info");
+            await fetch('/policies/reject', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rule_id: ruleId})
+            });
+            loadPolicies();
+            updateDashboard();
+        }
+
+        function switchTab(tab) {
+            const views = ['view-chat', 'view-brain', 'view-compliance'];
+            const tabs = ['tab-chat', 'tab-brain', 'tab-compliance'];
+            
+            views.forEach(v => document.getElementById(v).style.display = 'none');
+            tabs.forEach(t => document.getElementById(t).classList.remove('active'));
+            
+            document.getElementById(`view-${tab}`).style.display = 'flex';
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            if (tab === 'brain') {
+                loadMemoryItems();
+                loadPolicies();
+            } else if (tab === 'compliance') {
+                loadComplianceHistory();
+            }
+        }
+
+        async function loadMemoryItems() {
+            try {
+                console.log("Fetching governed memories...");
+                const res = await fetch('/memory/items');
+                const data = await res.json();
+                console.log("Memory items data:", data);
+
+                const grid = document.getElementById('memory-grid');
+                if (!data.success || !data.items || data.items.length === 0) {
+                    grid.innerHTML = '<p style="opacity:0.5; font-style:italic; grid-column: 1/-1; text-align: center; padding: 40px;">No distilled memories in this vault yet. Try chatting or click "Optimize Brain".</p>';
+                    return;
+                }
+
+                grid.innerHTML = data.items.map(item => {
+                    const sensitivity = item.sensitivity || 'Medium';
+                    const status = item.status || 'candidate';
+                    const type = item.memory_type || 'fact';
+                    const body = item.body || '(Empty Memory)';
+                    const confidence = (item.confidence || 0.5) * 100;
+
+                    return `
+                        <div class="memory-card ${sensitivity}">
+                            <span class="sensitivity-badge badge-${sensitivity}">${sensitivity}</span>
+                            <div style="font-size: 0.65rem; color: var(--text-dim); margin-bottom: 5px;">
+                                ${type.toUpperCase()} • Confidence: ${confidence.toFixed(0)}%
+                            </div>
+                            <div style="font-size: 0.85rem; line-height: 1.4; flex-grow: 1;">
+                                ${body}
+                            </div>
+                            ${status === 'candidate' ? '<div style="font-size: 0.7rem; color: var(--warning); margin-bottom: 10px;">⚠️ Review Required (High Risk)</div>' : ''}
+                            <div class="card-actions">
+                                ${status === 'candidate' ? `
+                                    <button class="btn-sm" style="background: var(--success); color: #000; font-weight: bold;" onclick="event.stopPropagation(); memoryAction('${item.memory_id}', 'approve')">Approve</button>
+                                ` : ''}
+                                <button class="btn-sm" style="background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-color);" onclick="event.stopPropagation(); memoryAction('${item.memory_id}', 'forget')">Forget</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error("Failed to load memory items:", err);
+            }
+        }
+
+        async function memoryAction(id, action) {
+            const res = await fetch(`/memory/action/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: action})
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, "success");
+                loadMemoryItems();
+            }
+        }
+
+        async function loadComplianceHistory() {
+            try {
+                const res = await fetch('/compliance/export');
+                const data = await res.json();
+                const container = document.getElementById('compliance-timeline');
+                
+                if (!data.success || data.audit.length === 0) {
+                    container.innerHTML = '<p style="opacity:0.5; font-style:italic; padding: 40px; text-align:center;">No audit records found. Performance of agent actions will build this log.</p>';
+                    return;
+                }
+                
+                container.innerHTML = data.audit.map(log => `
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 12px; display: flex; gap: 15px;">
+                        <div style="font-size: 1.5rem;">${log.granted ? '✅' : '🚫'}</div>
+                        <div style="flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <strong style="color: var(--accent-primary); text-transform: uppercase; font-size: 0.75rem;">${log.intent}</strong>
+                                <span style="font-size: 0.7rem; opacity: 0.5;">${new Date(log.timestamp * 1000).toLocaleString()}</span>
+                            </div>
+                            <div style="font-family: monospace; font-size: 0.8rem; margin: 4px 0; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${log.resource}
+                            </div>
+                            <div style="font-size: 0.75rem; opacity: 0.7;">Reason: ${log.reason || 'Manual Verification'}</div>
+                            ${log.token ? `<div style="font-size: 0.65rem; color: var(--success); margin-top: 4px;">Auth Token: ${log.token.substring(0,8)}...</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function downloadComplianceReport() {
+            window.location.href = '/compliance/report';
+        }
+
+        async function optimizeMemory() {
+            showToast("Consolidating memory episodes...", "info");
+            const res = await fetch('/memory/optimize', {method: 'POST'});
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, "success");
+                loadMemoryItems();
+            }
+        }
+
+        async function loadVaults() {
+            const res = await fetch('/vaults/list');
+            const data = await res.json();
+            
+            const isDefault = !data.current || data.current === 'default';
+            
+            document.getElementById('vault-name').innerHTML = 
+                !isDefault 
+                ? `🔒 ${data.current} <span style="color:var(--success);">(Encrypted)</span>` 
+                : `Default Vault <span style="color:#888;">(Plaintext)</span>`;
+
+            // Only show lock button if an encrypted vault is active
+            document.getElementById('lock_vault_btn').style.display = isDefault ? 'none' : 'block';
+
+            const list = document.getElementById('vault-list');
+            list.innerHTML = data.vaults.map(v => `
+                <div class="vault-item ${data.current === v ? 'active' : ''}" onclick="openUnlockModal('${v}')">
+                    <span style="margin-right:8px; font-size: 0.9rem;">${data.current === v ? '🔓' : '🔒'}</span>
+                    <span class="vault-name">${v}</span>
+                </div>
+            `).join('');
+        }
+
+        async function lockCurrentVault() {
+            const res = await fetch('/vaults/list');
+            const data = await res.json();
+            const current = data.current;
+
+            if (!current || current === "default") {
+                showToast("Default vault cannot be locked.", "info");
+                return;
+            }
+
+            if (confirm(`Lock vault "${current}"? You will need the password to unlock it again.`)) {
+                // Switching to default effectively locks the current one (singleton isolation)
+                await fetch(`/vaults/unlock?name=default&password=`, {method: 'POST'});
+                loadVaults();
+                showToast(`Vault "${current}" locked. Session cleared.`, "success");
+                addMessage("System", `Vault ${current} locked. Returning to default silo.`, "agent");
+            }
+        }
+
+        function openUnlockModal(name) {
+            currentAction = 'unlock';
+            targetVaultName = name;
+            document.getElementById('action_title').innerText = "Unlock Vault";
+            document.getElementById('action_subtitle').innerText = `Enter password for "${name}"`;
+            document.getElementById('vault_name_container').style.display = "none";
+            document.getElementById('vault_action_modal').style.display = "flex";
+        }
+
+        function createNewVault() {
+            currentAction = 'create';
+            document.getElementById('action_title').innerText = "Create New Vault";
+            document.getElementById('action_subtitle').innerText = "Enter a name and secure password";
+            document.getElementById('vault_name_container').style.display = "block";
+            document.getElementById('action_vault_name').value = "";
+            document.getElementById('vault_action_modal').style.display = "flex";
+        }
+
+        function closeVaultModal() {
+            document.getElementById('vault_action_modal').style.display = "none";
+            document.getElementById('action_password').value = "";
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            // Force reflow for animation
+            setTimeout(() => toast.classList.add("show"), 10);
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function setLoading(active, message = "Loading...") {
+            const loadingBar = document.getElementById("encryption_status");
+            if (active) {
+                loadingBar.innerHTML = `<span class="spinner"></span> ${message}`;
+                loadingBar.style.opacity = "1";
+            } else {
+                updateDashboard();
+            }
+        }
+
+        async function submitVaultAction() {
+            const password = document.getElementById('action_password').value.trim();
+            if (!password) {
+                showToast("Password is required", "error");
+                return;
+            }
+
+            const name = currentAction === 'create' ? document.getElementById('action_vault_name').value.trim() : targetVaultName;
+            
+            const submitBtn = document.getElementById('action_submit_btn');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Initializing vault...";
+            submitBtn.disabled = true;
+
+            const endpoint = currentAction === 'create' ? '/vaults/create' : '/vaults/unlock';
+            
+            setLoading(true, currentAction === 'create' ? "Creating Sovereign Vault..." : "Decrypting Sovereign Vault...");
+            
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: name, password: password})
+                });
+                const data = await res.json();
+                if (data.status === 'created' || data.status === 'unlocked') {
+                    closeVaultModal();
+                    setLoading(true, "Initializing Episodic & Semantic Memory...");
+                    document.getElementById('chat_history').innerHTML = '<div class="message agent">Welcome. Vault unlocked. Initializing memory subsystems...</div>';
+                    
+                    await loadVaults();
+                    setLoading(true, "Loading Policy Governance Engine...");
+                    await updateDashboard();
+                    
+                    showToast(`Vault "${data.vault}" ready.`, "success");
+                } else {
+                    showToast(data.message || "Failed to unlock vault", "error");
+                }
+            } catch (e) {
+                showToast("Connection error", "error");
+            } finally {
+                setLoading(false);
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function lockCurrentVault() {
+            setLoading(true, "Securing and locking vault...");
+            try {
+                const res = await fetch('/vaults/lock', { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'locked') {
+                    showToast("Vault Locked. Session cleared.", "success");
+                    document.getElementById('chat_history').innerHTML = '<div class="message agent">Vault locked. Please unlock a vault to continue.</div>';
+                    await loadVaults();
+                    await updateDashboard();
+                }
+            } catch (e) {
+                showToast("Error locking vault", "error");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function sendMessage(manualText = null) {
             const input = document.getElementById("user_input");
-            const message = input.value.trim();
+            const message = manualText || input.value.trim();
             if (!message) return;
 
-            addMessage("You", message, "you");
-            input.value = "";
+            if (!manualText) {
+                input.value = "";
+            }
 
             const history = document.getElementById("chat_history");
-            const agentMsgDiv = document.createElement("div");
-            agentMsgDiv.className = "message agent";
-            agentMsgDiv.innerHTML = `<strong>LocalAgent</strong> <span id="typing_indicator" style="opacity: 0.6;">thinking...</span>`;
-            history.appendChild(agentMsgDiv);
+            
+            // User entry
+            const userDiv = document.createElement("div");
+            userDiv.className = "message user";
+            userDiv.innerHTML = `<strong>You</strong><br>${message}`;
+            history.appendChild(userDiv);
+
+            // Agent placeholder
+            const agentDiv = document.createElement("div");
+            agentDiv.className = "message agent";
+            agentDiv.innerHTML = `
+                <strong>Agent</strong><br>
+                <div id="chat-loading" style="display: block; font-style: italic; color: #888; font-size: 0.85rem;">
+                    <span>🔄 Decrypting vault & loading model...</span><br>
+                    <small style="opacity:0.7;">First response after switch can take 15-60s on CPU</small>
+                </div>
+                <span id="latest_response"></span>
+            `;
+            history.appendChild(agentDiv);
             history.scrollTop = history.scrollHeight;
 
-            try {
-                const res = await fetch("/chat/stream", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({message: message})
-                });
+            const response = await fetch("/chat/stream", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message: message})
+            });
 
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                const typingIndicator = document.getElementById("typing_indicator");
-                if (typingIndicator) typingIndicator.remove();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = "";
+            const responseSpan = agentDiv.querySelector("#latest_response");
+            const loadingEl = agentDiv.querySelector("#chat-loading");
 
-                while (true) {
-                    const {value, done} = await reader.read();
-                    if (done) break;
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
 
-                    const chunk = decoder.decode(value);
-                    const lines = chunk.split('\n');
-                    for (const line of lines) {
-                        if (line.startsWith("data: ")) {
-                            const dataStr = line.substring(6).trim();
-                            if (dataStr === "[DONE]") break;
-                            try {
-                                const data = JSON.parse(dataStr);
-                                if (data.delta) {
-                                    agentMsgDiv.innerHTML += data.delta;
-                                    history.scrollTop = history.scrollHeight;
-                                }
-                            } catch(e) {}
+                const chunk = decoder.decode(value);
+                const lines = chunk.split("\n");
+                for (const line of lines) {
+                    if (line.startsWith("data: ")) {
+                        const dataStr = line.replace("data: ", "").trim();
+                        if (dataStr === "[DONE]") {
+                            loadingEl.style.display = 'none';
+                            continue;
                         }
+
+                        try {
+                            const data = JSON.parse(dataStr);
+                            
+                            if (data.type === "status") {
+                                // Update current loading status text
+                                const loadingSpan = loadingEl.querySelector("span");
+                                if (loadingSpan) loadingSpan.innerText = data.content;
+                            } else if (data.type === "chunk" || data.delta || data.content) {
+                                // Real response starting
+                                if (fullText === "") {
+                                    responseSpan.innerHTML = "";
+                                    loadingEl.style.display = 'none';
+                                }
+                                const chunk = data.content || data.delta || "";
+                                fullText += chunk;
+                                responseSpan.innerText = fullText;
+                                history.scrollTop = history.scrollHeight;
+                            } else if (data.type === "permission_required") {
+                                showAirlock(data.data);
+                                lastUserMessage = message;
+                                responseSpan.innerHTML = "<i>Awaiting administrative permission...</i>";
+                            }
+                        } catch(e) {}
                     }
                 }
-            } catch(e) {
-                console.error("Chat error:", e);
-                agentMsgDiv.innerHTML += " <span style='color:var(--danger);'>(connection error)</span>";
+            }
+            loadingEl.style.display = 'none';
+            updateDashboard();
+        }
+
+        function showAirlock(data) {
+            currentRequestId = data.request_id;
+            document.getElementById('gate_intent').innerText = data.intent;
+            document.getElementById('gate_resource').innerText = data.resource;
+            document.getElementById('gate_risk').innerText = (data.risk_score * 100).toFixed(0) + "%";
+            
+            const promoteBtn = document.querySelector("#airlock_modal button[onclick='manuallyAlwaysAllow()']");
+            if (data.resource === "unknown") {
+                promoteBtn.disabled = true;
+                promoteBtn.style.opacity = "0.5";
+                promoteBtn.style.cursor = "not-allowed";
+                promoteBtn.innerText = "Cannot Promote Unknown Path";
+            } else {
+                promoteBtn.disabled = false;
+                promoteBtn.style.opacity = "1";
+                promoteBtn.style.cursor = "pointer";
+                promoteBtn.innerText = "Always Allow This Folder";
+            }
+            
+            document.getElementById('airlock_modal').style.display = "flex";
+        }
+
+        async function handleDecision(approved) {
+            document.getElementById('airlock_modal').style.display = "none";
+            const res = await fetch('/confirm', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({request_id: currentRequestId, approved: approved, message: lastUserMessage})
+            });
+            const data = await res.json();
+            if (data.success) {
+                // If the confirmation resulted in a response (e.g. after tool execution)
+                if (data.response) {
+                    addMessage("Agent", data.response, "agent");
+                } else {
+                    sendMessage(lastUserMessage);
+                }
+            }
+            if (data.pattern_learned) {
+                showToast(data.message, "success");
+            }
+            currentRequestId = null;
+            updateDashboard();
+        }
+
+        async function manuallyAlwaysAllow() {
+            const intent = document.getElementById('gate_intent').innerText;
+            const resource = document.getElementById('gate_resource').innerText;
+            
+            // Extract folder pattern (basic implementation: parent dir or glob)
+            let pattern = resource;
+            if (resource.includes('/')) {
+                pattern = resource.substring(0, resource.lastIndexOf('/') + 1) + "*";
+            } else if (resource.includes('\\')) {
+                pattern = resource.substring(0, resource.lastIndexOf('\\') + 1) + "*";
+            } else {
+                pattern = "*";
+            }
+
+            // Close modal immediately and show loading toast
+            document.getElementById('airlock_modal').style.display = "none";
+            showToast("Synthesizing trust policy...", "success");
+            
+            try {
+                const res = await fetch('/vaults/rules/promote', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({intent: intent, pattern: pattern})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast("Policy PERSISTED and ACTIVATED.", "success");
+                    // Trigger the original action again (now auto-approved by broker)
+                    handleDecision(true);
+                } else {
+                    showToast("Failed to promote pattern: " + (data.message || "Unknown error"), "error");
+                }
+            } catch (err) {
+                showToast("Connection error during promotion", "error");
+            }
+        }
+
+        async function revokeRule(ruleId) {
+            // Close modal immediately and show loading toast
+            showToast("Revoking trust...", "info");
+            
+            try {
+                const res = await fetch('/vaults/rules/revoke', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({rule_id: ruleId})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast("Trust revoked.", "success");
+                    updateDashboard();
+                }
+            } catch (err) {
+                showToast("Failed to revoke", "error");
             }
         }
 
@@ -275,90 +933,234 @@
             const history = document.getElementById("chat_history");
             const div = document.createElement("div");
             div.className = `message ${type}`;
-            div.innerHTML = `<strong>${sender}</strong>${text.replace(/\n/g, '<br>')}`;
+            div.innerHTML = `<strong>${sender}</strong><br>${text}`;
             history.appendChild(div);
             history.scrollTop = history.scrollHeight;
         }
 
         async function updateDashboard() {
             try {
-                // Update Stats
                 const statsRes = await fetch("/stats");
                 const stats = await statsRes.json();
-                document.getElementById("active_tokens").textContent = stats.active_tokens || 0;
-                document.getElementById("memory_points").textContent = stats.memory_stats?.total_events || 0;
-
-                // Update Trust
-                const trustRes = await fetch("/trust_status");
-                const trust = await trustRes.json();
-                const trustDiv = document.getElementById("trust_status");
-                if (trust.learned_policies && trust.learned_policies.length > 0) {
-                    trustDiv.innerHTML = trust.learned_policies.map(p => `
-                        <div style="margin-bottom:6px; padding:6px; background:rgba(63, 185, 80, 0.1); border-left: 2px solid #3fb950; border-radius:4px;">
-                            <strong style="color:#3fb950;">✅ ${p.intent}</strong><br>
-                            <small>${p.reason}</small>
-                        </div>
-                    `).join("");
+                
+                const ollamaStatus = document.getElementById("ollama_status");
+                if (stats.ollama_online) {
+                    ollamaStatus.innerText = "Online";
+                    ollamaStatus.style.color = "var(--success)";
                 } else {
-                    trustDiv.innerHTML = "<small>No learned policies yet (8+ uses needed).</small>";
+                    ollamaStatus.innerText = "Offline";
+                    ollamaStatus.style.color = "var(--danger)";
+                }
+                
+                document.getElementById("stats_memory").innerText = stats.memory_stats?.total_events || 0;
+                // Note: active_model can be fetched from /health/ollama if needed, but for now we'll just use a placeholder or add it to /stats
+                document.getElementById("active_model").innerText = stats.active_model || "qwen2:0.5b";
+                
+                // Vault Status Sync
+                const lockBtn = document.getElementById("lock_vault_btn");
+                const vaultIcon = document.getElementById("vault-status-icon");
+                const vaultName = document.getElementById("vault-name");
+                
+                if (stats.vault_active) {
+                    lockBtn.style.display = "block";
+                    vaultIcon.innerText = "🔓";
+                    vaultName.innerText = stats.vault_name || "Active Vault";
+                } else {
+                    lockBtn.style.display = "none";
+                    vaultIcon.innerText = "🔒";
+                    vaultName.innerText = "Vault Locked";
                 }
 
-                // Update Audit
+                const banner = document.getElementById('encryption_status');
+                if (stats.memory_stats?.encryption_active) {
+                    banner.innerText = "🔒 Vault Secure (AES-256 Encryption Active)";
+                    banner.className = "status-banner encrypted";
+                } else {
+                    banner.innerText = "🛡️ " + (stats.vault_active ? "Using Unencrypted Vault" : "Please unlock a vault to begin.");
+                    banner.className = "status-banner";
+                }
+
                 const auditRes = await fetch("/audit");
                 const audit = await auditRes.json();
                 const auditDiv = document.getElementById("audit_log");
-                if (audit.audit && audit.audit.length > 0) {
-                    auditDiv.innerHTML = audit.audit.map(e => {
-                        const time = new Date(e.timestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        return `
-                            <div class="log-entry">
-                                <div style="display:flex; justify-content:space-between; font-size:0.8em;">
-                                    <strong>${time}</strong>
-                                    <span style="color:${e.granted ? '#3fb950' : '#f85149'}">${e.granted ? '✅ GRANTED' : '❌ DENIED'}</span>
-                                </div>
-                                <div style="margin-top:2px;"><strong>${e.intent}</strong> → ${e.resource}</div>
-                            </div>
-                        `;
-                    }).join("");
-                } else {
-                    auditDiv.innerHTML = "<small>No recent events.</small>";
+                auditDiv.innerHTML = audit.audit.map(e => `
+                    <div class="log-entry ${e.granted ? 'granted' : 'denied'}">
+                        <strong style="color: #fff;">${e.intent}</strong> on ${e.resource}
+                        <div style="font-size: 0.65rem; opacity: 0.6;">${e.granted ? 'APPROVED' : 'BLOCKED'}</div>
+                    </div>
+                `).join("");
+
+                const traceRes = await fetch('/trace/latest');
+                const trace = await traceRes.json();
+                if (trace.trace_id) {
+                    document.getElementById('trace_summary').innerText = `ID: ${trace.trace_id.substring(0,8)} - Outcome: ${trace.final_outcome}`;
+                    document.getElementById('trace_memories').innerHTML = (trace.retrieved_memories || []).map(m => `<li>${m.body}</li>`).join("");
                 }
-            } catch(e) { console.error("Update error:", e); }
+
+                // Trust Status Update
+                const trustRes = await fetch("/trust_status");
+                const trustData = await trustRes.json();
+                const trustList = document.getElementById("trust-list");
+                
+                if (trustData.active_rules.length === 0 && trustData.candidate_rules.length === 0) {
+                    trustList.innerHTML = '<p style="opacity: 0.5; font-style: italic; padding: 10px;">No auto-learned patterns yet.</p>';
+                } else {
+                    let html = "";
+                    if (trustData.active_rules.length > 0) {
+                        html += '<div style="font-weight:bold; padding: 5px 0; color: var(--success);">✅ Verified Trusts</div>';
+                        html += trustData.active_rules.map(r => `
+                            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px; margin-bottom: 5px; border-left: 2px solid ${r.effect === 'deny' ? 'var(--danger)' : 'var(--success)'}; position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div style="font-weight: bold; font-size: 0.7rem;">${r.intent}</div>
+                                    <span style="font-size: 0.55rem; background: ${r.effect === 'deny' ? 'var(--danger)' : 'var(--success)'}; color: #000; padding: 1px 4px; border-radius: 3px; font-weight: bold;">
+                                        ${r.effect === 'deny' ? 'DENY' : 'ALLOW'}
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.6rem; opacity: 0.5; margin: 2px 0;">v${r.version} • ${r.source}</div>
+                                <div style="font-size: 0.65rem; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" title="Click to view history" onclick="showRuleHistory('${r.rule_id}')">${r.pattern}</div>
+                                <button onclick="revokeRule('${r.rule_id}')" style="position: absolute; right: 2px; bottom: 2px; background: transparent; border: none; color: #555; cursor: pointer; font-size: 0.7rem;">&times;</button>
+                            </div>
+                        `).join("");
+                    }
+                    if (trustData.candidate_rules.length > 0) {
+                        html += '<div style="font-weight:bold; padding: 5px 0; color: var(--accent-wait); margin-top: 10px;">⏳ Learning...</div>';
+                        html += trustData.candidate_rules.map(r => `
+                            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px; margin-bottom: 5px; border-left: 2px solid var(--accent-wait);">
+                                <div style="font-weight: bold; font-size: 0.7rem;">${r.intent}</div>
+                                <div style="font-size: 0.65rem; opacity: 0.7;">${r.pattern}</div>
+                                <div style="font-size: 0.6rem; opacity: 0.5;">Progress: ${r.approval_count}/8</div>
+                            </div>
+                        `).join("");
+                    }
+                    trustList.innerHTML = html;
+                }
+            } catch(e) {}
         }
 
-        async function updateSandbox() {
+        // --- Milestone 5: Simulation & Versioning Logic ---
+
+        let currentSimData = null;
+
+        async function simulateAndPromote(effect) {
+            const intent = document.getElementById('gate_intent').innerText;
+            const resource = document.getElementById('gate_resource').innerText;
+            
+            // Extract folder pattern
+            let pattern = resource;
+            if (resource.includes('/')) {
+                pattern = resource.substring(0, resource.lastIndexOf('/') + 1) + "*";
+            } else if (resource.includes('\\')) {
+                pattern = resource.substring(0, resource.lastIndexOf('\\') + 1) + "*";
+            } else {
+                pattern = "*";
+            }
+
+            document.getElementById('airlock_modal').style.display = "none";
+            showToast("Running backtest...", "info");
+
             try {
-                const res = await fetch("/sandbox_files");
+                const res = await fetch('/vaults/rules/simulate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({intent, pattern, effect})
+                });
                 const data = await res.json();
                 
-                const div = document.getElementById("sandbox_browser");
-                div.innerHTML = "";
-
-                if (data.files && data.files.length > 0) {
-                    data.files.forEach(file => {
-                        const item = document.createElement("div");
-                        item.style.marginBottom = "8px";
-                        item.style.padding = "6px";
-                        item.style.background = "#1a1a2e";
-                        item.style.borderRadius = "4px";
-                        item.innerHTML = `
-                            📄 <strong>${file.name}</strong><br>
-                            <small>${file.path} • ${file.size_kb} KB</small>
-                        `;
-                        div.appendChild(item);
-                    });
+                if (data.success) {
+                    currentSimData = { intent, pattern, effect };
+                    document.getElementById('sim_description').innerText = `Simulating a ${effect.toUpperCase()} policy for "${intent}" on "${pattern}"...`;
+                    document.getElementById('sim_matches').innerText = data.matches_found;
+                    document.getElementById('sim_message').innerText = data.message;
+                    document.getElementById('sim_confirm_btn').onclick = () => finalizePromotion(currentSimData);
+                    document.getElementById('simulation_modal').style.display = "flex";
                 } else {
-                    div.innerHTML = "<small>No files in sandbox yet.<br>Create some with the chat.</small>";
+                    showToast("Simulation failed, bypassing to direct promotion", "error");
+                    finalizePromotion({intent, pattern, effect});
                 }
-            } catch(e) {
-                console.error("Sandbox browser error:", e);
+            } catch (err) {
+                console.error(err);
+                finalizePromotion({intent, pattern, effect});
             }
         }
 
-        setInterval(updateDashboard, 3000);
-        setInterval(updateSandbox, 5000);
+        async function finalizePromotion(rule) {
+            document.getElementById('simulation_modal').style.display = "none";
+            const endpoint = rule.effect === 'allow' ? '/vaults/rules/promote' : '/vaults/rules/promote_deny';
+            
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({intent: rule.intent, pattern: rule.pattern})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Policy ${rule.effect.toUpperCase()} ACTIVATED.`, "success");
+                    if (rule.effect === 'allow') {
+                        handleDecision(true);
+                    } else {
+                        handleDecision(false);
+                    }
+                }
+            } catch (err) {
+                showToast("Failed to promote policy", "error");
+            }
+        }
+
+        function closeSimulation() {
+            document.getElementById('simulation_modal').style.display = "none";
+            document.getElementById('airlock_modal').style.display = "flex";
+        }
+
+        async function showRuleHistory(ruleId) {
+            try {
+                const res = await fetch(`/vaults/rules/history/${ruleId}`);
+                const data = await res.json();
+                
+                document.getElementById('history_subtitle').innerText = `ID: ${ruleId}`;
+                const list = document.getElementById('history_list');
+                
+                list.innerHTML = data.history.reverse().map(v => `
+                    <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: bold; font-size: 0.85rem;">Version ${v.version}</div>
+                            <div style="font-size: 0.75rem; opacity: 0.6; font-family: monospace;">${v.resource_pattern}</div>
+                            <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 4px;">Created: ${new Date(v.created_at).toLocaleString()}</div>
+                        </div>
+                        <button class="btn-sm" style="background: var(--accent-primary); color: #000; font-weight: bold;" onclick="rollbackRule('${ruleId}', ${v.version})">Rollback</button>
+                    </div>
+                `).join('');
+                
+                document.getElementById('history_modal').style.display = "flex";
+            } catch (err) {
+                showToast("Failed to load history", "error");
+            }
+        }
+
+        async function rollbackRule(ruleId, version) {
+            if (!confirm(`Rollback to version ${version}?`)) return;
+            
+            try {
+                const res = await fetch('/vaults/rules/rollback', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({rule_id: ruleId, version})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast("Policy restored.", "success");
+                    document.getElementById('history_modal').style.display = "none";
+                    updateDashboard();
+                }
+            } catch (err) {
+                showToast("Rollback failed", "error");
+            }
+        }
+
+        loadVaults();
         updateDashboard();
-        updateSandbox();
+        setInterval(updateDashboard, 5000);
     </script>
+    <div id="toast-container" class="toast-container"></div>
 </body>
 </html>
