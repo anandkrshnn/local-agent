@@ -1,4 +1,4 @@
-name: Build and Release Local Agent v4.0
+name: Build and Release Local Agent v0.3.0
 
 on:
   push:
@@ -9,144 +9,47 @@ on:
       version:
         description: 'Version to build'
         required: false
-        default: '4.0.0'
+        default: '0.3.0'
 
 jobs:
   # ============================================================
-  # BUILD WINDOWS DESKTOP APP
+  # BUILD PYTHON PACKAGE
   # ============================================================
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
-      - name: Install dependencies
-        run: |
-          cd desktop
-          npm install
-      
-      - name: Build Windows EXE
-        run: |
-          cd desktop
-          npm run build:win
-      
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-installer
-          path: desktop/dist/*.exe
-          retention-days: 30
-
-  # ============================================================
-  # BUILD macOS DESKTOP APP
-  # ============================================================
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
-      - name: Install dependencies
-        run: |
-          cd desktop
-          npm install
-      
-      - name: Build macOS DMG
-        run: |
-          cd desktop
-          npm run build:mac
-      
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-installer
-          path: desktop/dist/*.dmg
-          retention-days: 30
-
-  # ============================================================
-  # BUILD LINUX DESKTOP APP
-  # ============================================================
-  build-linux:
+  build-python:
+    name: Build Python Package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          node-version: '18'
+          python-version: '3.11'
       
       - name: Install dependencies
         run: |
-          cd desktop
-          npm install
+          python -m pip install --upgrade pip
+          pip install build twine
       
-      - name: Build Linux AppImage
-        run: |
-          cd desktop
-          npm run build:linux
+      - name: Build distribution
+        run: python -m build
       
-      - name: Upload Linux artifact
+      - name: Check distribution
+        run: twine check dist/*
+      
+      - name: Upload Python artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-installer
-          path: desktop/dist/*.AppImage
-          retention-days: 30
-
-  # ============================================================
-  # BUILD ANDROID APK
-  # ============================================================
-  build-android:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
-      - name: Install dependencies
-        run: |
-          cd mobile
-          npm install
-      
-      - name: Build Android APK
-        run: |
-          cd mobile/android
-          chmod +x gradlew
-          ./gradlew assembleRelease
-      
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: mobile/android/app/build/outputs/apk/release/*.apk
-          retention-days: 30
+          name: python-dist
+          path: dist/
+          retention-days: 7
 
   # ============================================================
   # BUILD FRONTEND
   # ============================================================
   build-frontend:
+    name: Build Web Frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -167,18 +70,24 @@ jobs:
           cd frontend
           npm run build
       
+      - name: Package Frontend
+        run: |
+          cd frontend/dist
+          zip -r ../../frontend-build.zip .
+      
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-build
-          path: frontend/dist/
-          retention-days: 30
+          name: frontend-dist
+          path: frontend-build.zip
+          retention-days: 7
 
   # ============================================================
   # CREATE GITHUB RELEASE
   # ============================================================
   create-release:
-    needs: [build-windows, build-macos, build-linux, build-android, build-frontend]
+    name: Create GitHub Release
+    needs: [build-python, build-frontend]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -191,16 +100,14 @@ jobs:
       - name: List artifacts
         run: |
           ls -la artifacts/
-          find artifacts -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.apk"
+          find artifacts -type f
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/windows-installer/*.exe
-            artifacts/macos-installer/*.dmg
-            artifacts/linux-installer/*.AppImage
-            artifacts/android-apk/*.apk
+            artifacts/python-dist/*
+            artifacts/frontend-dist/*.zip
           generate_release_notes: true
           draft: false
           prerelease: false
@@ -211,6 +118,7 @@ jobs:
   # NOTIFY ON COMPLETION
   # ============================================================
   notify:
+    name: Notification
     needs: create-release
     runs-on: ubuntu-latest
     if: always()
@@ -218,11 +126,9 @@ jobs:
       - name: Print summary
         run: |
           echo "========================================"
-          echo "Build Summary for Local Agent v4.0"
+          echo "Build Summary for Local Agent v0.3.0"
           echo "========================================"
-          echo "Windows: ${{ needs.build-windows.result }}"
-          echo "macOS:   ${{ needs.build-macos.result }}"
-          echo "Linux:   ${{ needs.build-linux.result }}"
-          echo "Android: ${{ needs.build-android.result }}"
-          echo "Frontend: ${{ needs.build-frontend.result }}"
+          echo "Python Core: ${{ needs.build-python.result }}"
+          echo "Web Frontend: ${{ needs.build-frontend.result }}"
+          echo "Release:     ${{ needs.create-release.result }}"
           echo "========================================"
