@@ -17,6 +17,8 @@ dependencies = [
     "python-jose[cryptography]",
     "psutil",
     "jinja2",
+    "lancedb",
+    "pyarrow",
 ]
 
 [project.scripts]
