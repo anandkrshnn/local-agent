@@ -1,6 +1,6 @@
 [project]
 name = "localagent"
-version = "0.3.0"
+version = "0.1.0"
 description = "A lightweight local-first AI agent with Just-in-Time Permission Broker for safe SLM tool execution"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -17,8 +17,8 @@ dependencies = [
     "python-jose[cryptography]",
     "psutil",
     "jinja2",
-    "lancedb",
-    "pyarrow",
+    "lancedb>=0.5.0",
+    "pyarrow>=15.0.0",
 ]
 
 [project.scripts]

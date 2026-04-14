@@ -1,4 +1,4 @@
-# 🛡️ LocalAgent Sovereign AI Container (v0.3.0)
+# 🛡️ LocalAgent Sovereign AI Container (v0.1.0)
 FROM python:3.11-slim
 
 # Install system dependencies
@@ -22,7 +22,7 @@ EXPOSE 8000
 
 # Metadata
 ENV NAME="LocalAgent"
-ENV VERSION="0.3.0"
+ENV VERSION="0.1.0"
 ENV LOCAL_AGENT_VAULT="/app/vaults"
 
 # Entry point: Start the unified dashboard and security broker

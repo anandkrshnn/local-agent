@@ -1,15 +1,19 @@
-# 🛡️ LocalAgent v0.3.0 — Sovereign Local AI Agent
+# 🛡️ LocalAgent v0.1.0 — Sovereign Local AI Agent
 
-**PolicyEngine vaults. Deny-first governance. IETF PTV compliant. Zero cloud.**
+**Production foundation:** Encrypted vaults, policy engine, 
+multi-vault isolation. Built for real-world use from day one.
 
-[![Dashboard](https://github.com/anandkrshnn/local-agent/releases/download/v0.3.0/demo.gif)](https://github.com/anandkrshnn/local-agent/releases/tag/v0.3.0)
+[![Dashboard](docs/demo.webp)](https://github.com/anandkrshnn/local-agent)
 
 ## 🚀 60-second Launch
 
 **Docker (Recommended)**:
 ```bash
+# Security tip: Inspect before running
+curl -sSL https://raw.githubusercontent.com/anandkrshnn/local-agent/main/docker-run.sh | less
+
+# Run the installer
 curl -sSL https://raw.githubusercontent.com/anandkrshnn/local-agent/main/docker-run.sh | bash
-# http://localhost:8000
 ```
 
 **Docker Compose**:
@@ -23,9 +27,9 @@ docker-compose up -d
 
 1. **PolicyEngine** — Semantic deny-first policies
 2. **Airlock Gateway** — Zero-trust LLM isolation  
-3. **Encrypted Vaults** — AES-256 + rotation
-4. **Audit Trail** — Immutable SCITT receipts
-5. **Multi-Vault** — Healthcare/Finance silos
+3. **Encrypted Vaults** — AES-256 isolation
+4. **Audit Trail** — Immutable action receipts
+5. **Multi-Vault** — Healthcare/Finance contexts
 
 ## 🏗️ Architecture Overview
 
@@ -80,9 +84,9 @@ The deployment:
 [Watch Dashboard Flow (Animated)](docs/demo.webp)
 
 ## 🤝 Enterprise / Compliance
-- **IETF PTV Author** — RATS WG attested identity
-- **EU AI Act / NIST** ready policy framework
-- Private deployments: [Contact](mailto:ananda.krishnan@hotmail.com)
+- **IETF-Ready** — Designing for RATS WG attestation standards
+- **EU AI Act / NIST** — Policy system designed for risk-based governance
+- **Pilot Partners** — Seeking collaborators in healthcare and finance [Contact](mailto:ananda.krishnan@hotmail.com)
 
 ## 🙌 Community
 ⭐ Star if sovereign AI resonates  
