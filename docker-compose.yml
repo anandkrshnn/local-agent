@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   local-agent:
-    image: anandkrshnn/local-agent:v0.6.0
+    image: anandkrshnn/local-agent:v0.3.0
     container_name: local-agent
     ports:
       - "8000:8000"

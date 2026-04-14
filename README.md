@@ -1,8 +1,8 @@
-# 🛡️ LocalAgent v0.6.0 — Sovereign Local AI Agent
+# 🛡️ LocalAgent v0.3.0 — Sovereign Local AI Agent
 
 **PolicyEngine vaults. Deny-first governance. IETF PTV compliant. Zero cloud.**
 
-[![Dashboard](https://github.com/anandkrshnn/local-agent/releases/download/v0.6.0/demo.gif)](https://github.com/anandkrshnn/local-agent/releases/tag/v0.6.0)
+[![Dashboard](https://github.com/anandkrshnn/local-agent/releases/download/v0.3.0/demo.gif)](https://github.com/anandkrshnn/local-agent/releases/tag/v0.3.0)
 
 ## 🚀 60-second Launch
 
@@ -26,6 +26,32 @@ docker-compose up -d
 3. **Encrypted Vaults** — AES-256 + rotation
 4. **Audit Trail** — Immutable SCITT receipts
 5. **Multi-Vault** — Healthcare/Finance silos
+
+## 🏗️ Architecture Overview
+
+```mermaid
+graph TD
+    A[User] --> B[Dashboard]
+    B --> C[Sovereign Vaults]
+    C --> D[LanceDB Episodic Log]
+    C --> E[DuckDB Semantic Memory]
+    C --> F[Encrypted JSONL Audit & Policies]
+    B --> G[Local Permission Broker LPB]
+    G --> H[Intent + Resource Check]
+    H --> I[Ephemeral Token]
+    I --> J[Sandbox Execution]
+    J --> K[Encrypted Audit Log]
+    subgraph "Governed Learning"
+        L[Audit Log] --> M[Candidate Rule Generation]
+        M --> N[User Review in Dashboard]
+        N --> O[Promote / Reject / Rollback]
+    end
+```
+
+**Key Components:**
+- **Sovereign Vaults**: Isolated encrypted storage per context
+- **LPB**: Security airlock with ephemeral tokens
+- **Governed Learning**: Visible candidate rules with user control
 
 ## 🏢 Kubernetes Deployment
 

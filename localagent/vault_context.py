@@ -1,11 +1,12 @@
+import os
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 @dataclass
 class VaultContext:
     """Manages isolated storage for one Sovereign Vault (user/session)."""
-    vault_root: str = "~/local_agent"
+    vault_root: str = field(default_factory=lambda: os.getenv("LOCAL_AGENT_VAULT", "~/local_agent"))
 
     def __post_init__(self):
         self.vault_root = Path(self.vault_root).expanduser().resolve()

@@ -6,6 +6,6 @@ from .sandbox import SandboxPath
 from .memory import MemoryEngine
 from .config import Config
 
-__version__ = "0.6.0"
+__version__ = "0.3.0"
 
 __all__ = ["LocalAgent", "LocalPermissionBroker", "SandboxPath", "MemoryEngine", "Config"]

@@ -1,6 +1,6 @@
 [project]
 name = "localagent"
-version = "0.6.0"
+version = "0.3.0"
 description = "A lightweight local-first AI agent with Just-in-Time Permission Broker for safe SLM tool execution"
 readme = "README.md"
 requires-python = ">=3.9"
