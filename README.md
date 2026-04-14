@@ -56,7 +56,7 @@ The deployment:
 ## 🤝 Enterprise / Compliance
 - **IETF PTV Author** — RATS WG attested identity
 - **EU AI Act / NIST** ready policy framework
-- Private deployments: [Contact](mailto:anandakrishnan.damodaran@gmail.com)
+- Private deployments: [Contact](mailto:ananda.krishnan@hotmail.com)
 
 ## 🙌 Community
 ⭐ Star if sovereign AI resonates  
