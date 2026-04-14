@@ -19,10 +19,10 @@ Thank you for your interest in contributing to the Sovereign AI Ecosystem! We we
 4. Add tests if applicable.
 5. Submit a Pull Request with a clear description of the changes.
 
-## Standards Track (PTV Protocol)
-For contributions to the specification itself (`ptv-protocol-spec`):
-- All changes must align with the **IETF Standards Track** requirements.
-- Major changes may require a formal RFC-style proposal in the `discussions` area first.
+## Standards Track
+For contributions to the core architecture:
+- All changes must align with the **Deny-First Governance** philosophy.
+- Major changes may require a design proposal in the `discussions` area first.
 
 ## Licensing
 By contributing to this repository, you agree that your contributions will be licensed under the project's existing license (MIT or CC BY 4.0).

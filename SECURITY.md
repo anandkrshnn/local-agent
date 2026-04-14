@@ -6,8 +6,8 @@ Currently, only the latest version of **Local Agent** (v0.1.x) is supported with
 
 | Version | Supported          |
 | ------- | ------------------ |
-| v0.1.x  | :white_check_mark: |
-| < v0.1  | :x:                |
+| v0.3.x  | :white_check_mark: |
+| v0.1.x  | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -16,7 +16,7 @@ Currently, only the latest version of **Local Agent** (v0.1.x) is supported with
 If you find a security vulnerability, please **DO NOT** open a public issue. Instead, please report it via one of the following methods:
 
 1. **GitHub Private Reporting**: Use the "Report a security vulnerability" button on the [Security tab](https://github.com/anandkrshnn/local-agent/security).
-2. **Email**: [Add your email or instructions here]
+2. **Email**: Open a private discussion or contact the maintainer through the email listed in the dashboard profiles.
 
 ### Our Response Process
 

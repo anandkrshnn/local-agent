@@ -77,7 +77,7 @@ The deployment:
 *The Compliance Hub tracks policy-audits and vault histories.*
 
 ## 📱 Live Demo
-[Watch 30s Dashboard Flow](https://github.com/anandkrshnn/local-agent/releases/download/v0.6.0/demo.mp4)
+[Watch Dashboard Flow (Animated)](docs/demo.webp)
 
 ## 🤝 Enterprise / Compliance
 - **IETF PTV Author** — RATS WG attested identity
